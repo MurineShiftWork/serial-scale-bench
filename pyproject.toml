@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "serial-scale-bench"
+dynamic = ["version"]
+description = "Python driver for RS-232/USB bench scales (Kern, Mettler-Toledo, etc.)."
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
+authors = [
+    { name = "Lars B. Rollik", email = "L.B.Rollik@protonmail.com" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pyserial",
+]
+
+[project.urls]
+Repository = "https://github.com/larsrollik/serial-scale-bench"
+"Issue Tracker" = "https://github.com/larsrollik/serial-scale-bench/issues"
+
+[project.optional-dependencies]
+dev = [
+    "commitizen",
+    "pytest",
+    "pytest-cov",
+    "pre-commit",
+]
+api = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+]
+
+# ---------------------------------------------------------------------------
+# Build
+# ---------------------------------------------------------------------------
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["serial_scale_bench"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/serial_scale_bench", "/tests", "/README.md", "/LICENSE", "/pyproject.toml"]
+
+# ---------------------------------------------------------------------------
+# Commitizen
+# ---------------------------------------------------------------------------
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "scm"
+tag_format = "v$version"
+update_changelog_on_bump = false
+tag_only = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=serial_scale_bench --durations=0"
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "W"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+# ---------------------------------------------------------------------------
+# Mypy
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+ignore_missing_imports = true

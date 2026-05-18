@@ -1,0 +1,36 @@
+---
+services:
+  serial-scale:
+    # env
+    env_file:
+      - ".env"
+    build: .
+    container_name: serial-scale
+    ports:
+      - "${HOST_PORT:-8080}:8000"
+    devices:
+      - "${SERIAL_DEVICE:-/dev/ttyUSB0}:/dev/ttyUSB0"
+    command: >
+      python main.py
+      --device /dev/ttyUSB0
+      --scale-id ${SCALE_ID:-scale-a1}
+      --port 8000
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+    # for force-recreate:
+#    restart: "no"
+#    tmpfs:
+#      - /tmp
+
+# .env file example:
+# HOST_PORT=8080
+# SERIAL_DEVICE=/dev/ttyUSB0
+# SCALE_ID=scale-a1
+
+# up:
+#	docker compose up --build --force-recreate --abort-on-container-exit
+#
+# down:
+#	docker compose down --remove-orphans --volumes
