@@ -2,9 +2,10 @@ from serial import SerialException
 
 import logging
 import re
+import statistics
 import time
+from collections.abc import Callable
 from datetime import datetime
-from typing import Literal
 
 import serial
 from enum import Enum
@@ -176,6 +177,112 @@ class AutoReconnectSerialScale:
                 return getattr(self._scale, name)(*args, **kwargs)
 
         return method
+
+
+class Scale:
+    """High-level bench-scale driver with the same interface as serial-scale-hx711.
+
+    Construction is lightweight; call start() to open the port and infer protocol.
+    This allows the same WeighingScaleBase adapter pattern used for the HX711 scale.
+    """
+
+    def __init__(
+        self,
+        serial_port: str,
+        baudrate: int = 9600,
+        timeout: float = 1.0,
+        protocol: int | None = None,
+    ) -> None:
+        self.serial_port = serial_port
+        self.baudrate = baudrate
+        self.timeout = timeout
+        self.protocol = protocol
+        self._scale: SerialScale | None = None
+
+    def start(self, timeout: float = 10.0) -> None:
+        """Open the serial port, infer protocol, and verify the scale is responsive."""
+        deadline = time.time() + timeout
+        last_exc: Exception | None = None
+        while time.time() < deadline:
+            try:
+                self._scale = SerialScale(
+                    port=self.serial_port,
+                    baudrate=self.baudrate,
+                    timeout=self.timeout,
+                    protocol=self.protocol or 2,
+                )
+                if self._scale.is_responsive():
+                    logging.info(f"Bench scale ready on {self.serial_port}")
+                    return
+            except (SerialException, Exception) as exc:
+                last_exc = exc
+            time.sleep(0.2)
+        raise TimeoutError(
+            f"Bench scale on {self.serial_port} did not respond within {timeout}s. "
+            f"Last error: {last_exc}"
+        )
+
+    def tare(self) -> None:
+        self._scale.tare()
+        time.sleep(0.3)
+
+    def read_weight(self) -> float | None:
+        return self._scale.get_weight()
+
+    def read_weight_repeated(
+        self,
+        n_readings: int = 5,
+        inter_read_delay: float = 0.1,
+    ) -> list[float]:
+        readings = []
+        for _ in range(n_readings):
+            r = self.read_weight()
+            if r is not None:
+                readings.append(r)
+            time.sleep(inter_read_delay)
+        return readings
+
+    def read_weight_reliable(
+        self,
+        n_readings: int = 5,
+        inter_read_delay: float = 0.1,
+        measure: Callable = statistics.median,
+    ) -> float:
+        readings = self.read_weight_repeated(n_readings, inter_read_delay)
+        if not readings:
+            raise RuntimeError(
+                f"Bench scale on {self.serial_port} returned no valid readings "
+                f"after {n_readings} attempts."
+            )
+        return measure(readings)
+
+    def read_weight_blocking(
+        self,
+        n_valid: int = 3,
+        inter_read_delay: float = 0.2,
+        timeout: float = 30.0,
+    ) -> float:
+        readings = []
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            r = self.read_weight()
+            if r is not None:
+                readings.append(r)
+                if len(readings) >= n_valid:
+                    return statistics.median(readings)
+            time.sleep(inter_read_delay)
+        raise TimeoutError(
+            f"Bench scale on {self.serial_port} could not produce {n_valid} valid "
+            f"readings within {timeout}s."
+        )
+
+    def disconnect(self) -> None:
+        if self._scale is not None:
+            self._scale.close()
+            self._scale = None
+
+    def __del__(self) -> None:
+        self.disconnect()
 
 
 if __name__ == "__main__":
