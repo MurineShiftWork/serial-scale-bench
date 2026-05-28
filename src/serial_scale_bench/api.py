@@ -1,11 +1,11 @@
-import argparse
-import os
 import socket
 from datetime import datetime
-import uvicorn
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
 from serial_scale_bench.scale import AutoReconnectSerialScale
+
 
 class ScaleStatus(BaseModel):
     scale_id: str
@@ -18,7 +18,9 @@ def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
     """"""
     app = FastAPI()
     app.state.scale = scale
-    app.state.instance_info = instance_info  # TODO: instance id/name, api host/port, serial port/baud rate
+    app.state.instance_info = (
+        instance_info  # TODO: instance id/name, api host/port, serial port/baud rate
+    )
 
     @app.get("/status", response_model=ScaleStatus)
     def get_scale_info():
@@ -50,14 +52,12 @@ def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
             raise HTTPException(status_code=204, detail="No weight read")
         return {"scale_id": instance_info["id"], "weight": weight}
 
-
     @app.post("/tare")
     def tare_scale():
         if not app.state.scale.is_responsive():
             raise HTTPException(status_code=503, detail="Scale not responsive")
         app.state.scale.tare()
         return {"scale_id": instance_info["id"], "action": "tared"}
-
 
     @app.post("/zero")
     def zero_scale():

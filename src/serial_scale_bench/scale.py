@@ -1,20 +1,18 @@
-from serial import SerialException
-
 import logging
 import re
 import statistics
 import time
 from collections.abc import Callable
 from datetime import datetime
-
-import serial
 from enum import Enum
 
+import serial
+from serial import SerialException
+
+
 class ScaleProtocols(Enum):
-    Protocol1 = {
-        "id": 1,
-        "format": ""
-    }
+    Protocol1 = {"id": 1, "format": ""}
+
 
 class SerialScale:
     def __init__(
@@ -33,7 +31,7 @@ class SerialScale:
             timeout=timeout,
         )
         self.protocol: int | None = protocol
-        self.last_response_time = None
+        self.last_response_time: datetime | None = None
 
         self.ser.reset_input_buffer()
         self.ser.reset_output_buffer()
@@ -47,7 +45,7 @@ class SerialScale:
         if self.ser.in_waiting:
             self.ser.reset_input_buffer()
 
-        full_command = f"{command}\n\r".encode("ascii")
+        full_command = f"{command}\r\n".encode("ascii")
         self.ser.write(full_command)
         logging.debug(f"Sending command: {command}")
 
@@ -81,7 +79,7 @@ class SerialScale:
         if any(h in joined for h in ["GS", "No.", "Total"]):
             self.protocol = 1
 
-        match = re.search(r'[-+]? *([\d.]+)\s*([a-zA-Z]+)', lines[0])
+        match = re.search(r"[-+]? *([\d.]+)\s*([a-zA-Z]+)", lines[0])
         if match:
             self.protocol = 2
 
@@ -140,7 +138,6 @@ class SerialScale:
             self.ser.close()
 
 
-
 class AutoReconnectSerialScale:
     def __init__(self, *args, retry_delay=2.0, **kwargs):
         self._args = args
@@ -189,7 +186,7 @@ class Scale:
     def __init__(
         self,
         serial_port: str,
-        baudrate: int = 9600,
+        baudrate: int = 4800,
         timeout: float = 1.0,
         protocol: int | None = None,
     ) -> None:
@@ -205,6 +202,9 @@ class Scale:
         last_exc: Exception | None = None
         while time.time() < deadline:
             try:
+                if self._scale is not None:
+                    self._scale.close()
+                    self._scale = None
                 self._scale = SerialScale(
                     port=self.serial_port,
                     baudrate=self.baudrate,
@@ -223,10 +223,12 @@ class Scale:
         )
 
     def tare(self) -> None:
+        assert self._scale is not None
         self._scale.tare()
         time.sleep(0.3)
 
     def read_weight(self) -> float | None:
+        assert self._scale is not None
         return self._scale.get_weight()
 
     def read_weight_repeated(

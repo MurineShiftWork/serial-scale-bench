@@ -1,13 +1,14 @@
-from dash import Dash, html, dcc, Output, Input
-import dash
+from dash import Dash, Input, Output, dcc, html
 
 app = Dash(__name__)
 
-app.layout = html.Div([
-    html.Button("Fetch from localhost", id="your_trigger"),
-    dcc.Store(id="your_store"),
-    html.Div(id="your_display")
-])
+app.layout = html.Div(
+    [
+        html.Button("Fetch from localhost", id="your_trigger"),
+        dcc.Store(id="your_store"),
+        html.Div(id="your_display"),
+    ]
+)
 
 # Clientside callback that fetches from localhost
 app.clientside_callback(
@@ -27,16 +28,15 @@ app.clientside_callback(
     }
     """,
     Output("your_store", "data"),
-    Input("your_trigger", "n_clicks")
+    Input("your_trigger", "n_clicks"),
 )
 
+
 # Server-side callback just to display the data
-@app.callback(
-    Output("your_display", "children"),
-    Input("your_store", "data")
-)
+@app.callback(Output("your_display", "children"), Input("your_store", "data"))
 def show(data):
     return f"Response: {data}" if data else "Click to fetch"
+
 
 if __name__ == "__main__":
     app.run(debug=True)

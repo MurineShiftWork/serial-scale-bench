@@ -1,17 +1,14 @@
 import logging
 import re
-import time
 from datetime import datetime
-from typing import Literal
-
-import serial
 from enum import Enum
 
+import serial
+
+
 class ScaleProtocols(Enum):
-    Protocol1 = {
-        "id": 1,
-        "format": ""
-    }
+    Protocol1 = {"id": 1, "format": ""}
+
 
 class SerialScale:
     def __init__(
@@ -78,7 +75,7 @@ class SerialScale:
         if any(h in joined for h in ["GS", "No.", "Total"]):
             self.protocol = 1
 
-        match = re.search(r'[-+]? *([\d.]+)\s*([a-zA-Z]+)', lines[0])
+        match = re.search(r"[-+]? *([\d.]+)\s*([a-zA-Z]+)", lines[0])
         if match:
             self.protocol = 2
 

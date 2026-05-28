@@ -1,0 +1,26 @@
+site_name: serial-scale-bench
+site_description: Python driver for RS-232/USB bench scales (Kern, Mettler-Toledo, etc.)
+site_url: https://MurineShiftWork.github.io/serial-scale-bench/
+repo_url: https://github.com/MurineShiftWork/serial-scale-bench
+repo_name: MurineShiftWork/serial-scale-bench
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+    accent: teal
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc
+
+nav:
+  - Home: index.md

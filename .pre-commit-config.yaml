@@ -20,6 +20,7 @@ repos:
     rev: v1.14.0
     hooks:
       - id: mypy
+        exclude: ^(serial_scale\.py|serial_scale_v2\.py|serial_scale_api\.py|serial_scale_autoconnect\.py|example_dash_localhost/)
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.1.0
