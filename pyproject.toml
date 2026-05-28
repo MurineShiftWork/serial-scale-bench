@@ -88,13 +88,6 @@ addopts = "--cov=serial_scale_bench --durations=0"
 
 [tool.ruff]
 line-length = 99
-exclude = [
-    "serial_scale.py",
-    "serial_scale_v2.py",
-    "serial_scale_api.py",
-    "serial_scale_autoconnect.py",
-    "example_dash_localhost",
-]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "W"]
@@ -112,10 +105,3 @@ line-ending = "auto"
 [tool.mypy]
 mypy_path = "src"
 ignore_missing_imports = true
-exclude = [
-    "serial_scale\\.py",
-    "serial_scale_v2\\.py",
-    "serial_scale_api\\.py",
-    "serial_scale_autoconnect\\.py",
-    "example_dash_localhost",
-]
