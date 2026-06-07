@@ -20,7 +20,7 @@ class SerialScale:
         port: str,
         baudrate: int = 9600,
         timeout: float = 1,
-        protocol: int = 2,
+        protocol: int | None = None,
     ):
         self.ser = serial.Serial(
             port=port,
@@ -70,21 +70,29 @@ class SerialScale:
             return
 
         self._send_command("P")
-        lines = self._read_lines()
+        # Read raw lines without protocol branching (can't use _read_lines here).
+        lines = []
+        for _ in range(5):
+            line = self.ser.readline().decode("ascii", errors="ignore").strip()
+            if line:
+                lines.append(line)
 
         if not lines:
-            raise RuntimeError("No response from scale.")
+            raise RuntimeError("No response from scale during protocol detection.")
 
         joined = " ".join(lines)
         if any(h in joined for h in ["GS", "No.", "Total"]):
             self.protocol = 1
-
-        match = re.search(r"[-+]? *([\d.]+)\s*([a-zA-Z]+)", lines[0])
-        if match:
+            logging.info("Bench scale: detected protocol 1 (multi-line GS/NT/GT format)")
+        elif re.search(r"[-+]?\s*[\d.]+\s*[a-zA-Z]+", lines[0]):
             self.protocol = 2
+            logging.info("Bench scale: detected protocol 2 (single-line format)")
 
         if self.protocol is None:
-            raise RuntimeError(f"Unrecognized scale output: {lines}")
+            raise RuntimeError(
+                f"Could not detect scale protocol from output: {lines}. "
+                "Pass protocol=1 or protocol=2 explicitly."
+            )
 
     def get_weight(self) -> float | None:
         """"""
@@ -209,7 +217,7 @@ class Scale:
                     port=self.serial_port,
                     baudrate=self.baudrate,
                     timeout=self.timeout,
-                    protocol=self.protocol or 2,
+                    protocol=self.protocol,
                 )
                 if self._scale.is_responsive():
                     logging.info(f"Bench scale ready on {self.serial_port}")
