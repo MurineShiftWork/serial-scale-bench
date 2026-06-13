@@ -8,6 +8,8 @@ from serial_scale_bench.scale import AutoReconnectSerialScale
 
 
 class ScaleStatus(BaseModel):
+    """Connection and protocol status for a single scale instance."""
+
     scale_id: str
     is_connected: bool
     last_seen: datetime | None = None
@@ -15,7 +17,15 @@ class ScaleStatus(BaseModel):
 
 
 def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
-    """"""
+    """Build and return a FastAPI application that exposes a scale over HTTP.
+
+    Args:
+        scale: Auto-reconnecting scale instance to serve.
+        instance_info: Mapping with at least ``scale_id`` and ``port`` keys.
+
+    Returns:
+        Configured FastAPI application (not yet running).
+    """
     app = FastAPI()
     app.state.scale = scale
     app.state.instance_info = (
@@ -24,6 +34,7 @@ def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
 
     @app.get("/status", response_model=ScaleStatus)
     def get_scale_info():
+        """Return connection status and detected protocol for this scale."""
         return ScaleStatus(
             scale_id=app.state.instance_info["scale_id"],
             is_connected=app.state.scale.is_connected(),
@@ -33,10 +44,12 @@ def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
 
     @app.get("/ping")
     def ping_scale():
+        """Return whether the scale replies to a print command right now."""
         return {"responsive": app.state.scale.is_responsive()}
 
     @app.get("/info")
     def get_info():
+        """Return instance metadata including hostname and HTTP port."""
         return {
             "scale_id": app.state.instance_info,
             "hostname": socket.gethostname(),
@@ -45,6 +58,10 @@ def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
 
     @app.get("/weight")
     def read_weight():
+        """Return the current weight reading from the scale.
+
+        Raises 503 if the scale is unresponsive, or 204 if no value can be parsed.
+        """
         if not app.state.scale.is_responsive():
             raise HTTPException(status_code=503, detail="Scale not responsive")
         weight = app.state.scale.get_weight()
@@ -54,6 +71,7 @@ def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
 
     @app.post("/tare")
     def tare_scale():
+        """Send the tare command to zero the display with the current load."""
         if not app.state.scale.is_responsive():
             raise HTTPException(status_code=503, detail="Scale not responsive")
         app.state.scale.tare()
@@ -61,6 +79,7 @@ def create_api(scale: AutoReconnectSerialScale, instance_info: dict) -> FastAPI:
 
     @app.post("/zero")
     def zero_scale():
+        """Send the zero command to reset the scale's internal zero point."""
         if not app.state.scale.is_responsive():
             raise HTTPException(status_code=503, detail="Scale not responsive")
         app.state.scale.zero()

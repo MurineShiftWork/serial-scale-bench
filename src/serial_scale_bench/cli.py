@@ -3,6 +3,7 @@ import os
 
 
 def cli_parser():
+    """Parse command-line arguments for the serial-scale-bench HTTP server."""
     parser = argparse.ArgumentParser(description="Start a SerialScale FastAPI service")
     parser.add_argument("--port", type=int, default=8000, help="Port to run FastAPI server on")
     parser.add_argument(
