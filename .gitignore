@@ -45,6 +45,9 @@ dmypy.json
 # Build artifacts (hatch-vcs generated)
 src/*/_version.py
 
+# MkDocs built site
+site/
+
 # Jupyter
 .ipynb_checkpoints
 *.ipynb
