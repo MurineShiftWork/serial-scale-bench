@@ -31,18 +31,10 @@ def fix(path: Path) -> None:
     first = next((i for i, ln in enumerate(fixed) if not ln.startswith("#")), None)
     if first is not None and first + 1 < len(fixed):
         next_content = next(
-            (
-                i
-                for i, ln in enumerate(fixed[first + 1 :], first + 1)
-                if not ln.startswith("#")
-            ),
+            (i for i, ln in enumerate(fixed[first + 1 :], first + 1) if not ln.startswith("#")),
             None,
         )
-        if (
-            next_content is not None
-            and next_content == first + 1
-            and fixed[first + 1].strip()
-        ):
+        if next_content is not None and next_content == first + 1 and fixed[first + 1].strip():
             fixed.insert(first + 1, "\n")
 
     path.write_text("".join(fixed))

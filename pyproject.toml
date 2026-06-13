@@ -30,6 +30,7 @@ dev = [
 ]
 docs = [
     "mkdocs-material",
+    "mkdocstrings[python]",
 ]
 api = [
     "fastapi",

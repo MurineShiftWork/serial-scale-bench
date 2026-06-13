@@ -5,14 +5,15 @@ All serial I/O is mocked — no physical hardware required.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
+
 import pytest
 
-from serial_scale_bench.scale import SerialScale, Scale
-
+from serial_scale_bench.scale import Scale, SerialScale
 
 # ---------------------------------------------------------------------------
 # Helpers
+
 
 def _make_serial_scale(responses: list[bytes], protocol: int | None = None) -> SerialScale:
     """Build a SerialScale with a mocked serial port returning *responses* on readline()."""
@@ -29,6 +30,7 @@ def _make_serial_scale(responses: list[bytes], protocol: int | None = None) -> S
 
 # ---------------------------------------------------------------------------
 # _infer_protocol — protocol 1 detection
+
 
 def test_infer_protocol_detects_protocol1_from_gs_prefix():
     with patch("serial_scale_bench.scale.serial.Serial") as mock_cls:
@@ -61,6 +63,7 @@ def test_infer_protocol_detects_protocol1_from_total_prefix():
 # ---------------------------------------------------------------------------
 # _infer_protocol — protocol 2 detection
 
+
 def test_infer_protocol_detects_protocol2_from_single_line():
     with patch("serial_scale_bench.scale.serial.Serial") as mock_cls:
         mock_ser = MagicMock()
@@ -85,6 +88,7 @@ def test_infer_protocol_detects_protocol2_signed_negative():
 
 # ---------------------------------------------------------------------------
 # _infer_protocol — no response raises
+
 
 def test_infer_protocol_raises_on_empty_response():
     with patch("serial_scale_bench.scale.serial.Serial") as mock_cls:
@@ -111,6 +115,7 @@ def test_infer_protocol_raises_on_unrecognized_output():
 # ---------------------------------------------------------------------------
 # _infer_protocol — explicit protocol skips detection
 
+
 def test_explicit_protocol_skips_detection():
     with patch("serial_scale_bench.scale.serial.Serial") as mock_cls:
         mock_ser = MagicMock()
@@ -125,6 +130,7 @@ def test_explicit_protocol_skips_detection():
 
 # ---------------------------------------------------------------------------
 # Scale.start() passes protocol=None to SerialScale (allows detection)
+
 
 def test_scale_start_passes_none_protocol_when_unset():
     scale = Scale(serial_port="/dev/ttyUSB0", protocol=None)
@@ -150,6 +156,7 @@ def test_scale_start_passes_explicit_protocol_through():
 
 # ---------------------------------------------------------------------------
 # _parse_weight_line
+
 
 def test_parse_weight_line_protocol2_plain():
     with patch("serial_scale_bench.scale.serial.Serial") as mock_cls:

@@ -22,5 +22,17 @@ markdown_extensions:
   - pymdownx.superfences
   - toc
 
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_root_heading: true
+            show_source: false
+            show_submodules: false
+
 nav:
   - Home: index.md
+  - API Reference: api.md
