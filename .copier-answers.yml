@@ -12,3 +12,4 @@ project_name: serial-scale-bench
 project_slug: serial_scale_bench
 python_requires: '3.10'
 year: '2026'
+test_on_windows: false
