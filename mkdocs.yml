@@ -30,11 +30,12 @@ plugins:
           options:
             docstring_style: google
             show_root_heading: true
-            show_source: false
+            show_source: true
             show_submodules: false
 
 nav:
   - Home: index.md
   - Getting Started: getting_started.md
+  - Protocols: protocols.md
   - Usage: usage.md
   - API Reference: api.md
