@@ -1,5 +1,7 @@
 # serial-scale-bench
 
+[![PyPI](https://img.shields.io/pypi/v/serial-scale-bench.svg)](https://pypi.org/project/serial-scale-bench)
+
 Python driver for RS-232/USB commercial bench scales (Kern, Mettler-Toledo, etc.).
 
 Supports two ASCII response protocols:
