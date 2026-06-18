@@ -15,28 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.12"
-
-      - name: Install tools
-        run: pip install commitizen hatchling hatch-vcs
+          python-version: "3.10"
 
       - name: Bump version
         id: bump
         run: |
-          cz bump --yes || EXIT=$?
-          if [ "${EXIT:-0}" -eq 21 ]; then
+          uvx --from commitizen cz bump --yes || EXIT=$?
+          if [ "${EXIT:-0}" -eq 21 ] || [ "${EXIT:-0}" -eq 6 ]; then
             echo "No bumpable commits since last tag — skipping."
             echo "skipped=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -49,7 +45,7 @@ jobs:
 
       - name: Build
         if: steps.bump.outputs.skipped != 'true'
-        run: python -m hatchling build
+        run: uv build
 
       - name: Create GitHub release
         if: steps.bump.outputs.skipped != 'true'
@@ -57,8 +53,8 @@ jobs:
         with:
           tag_name: "v${{ steps.bump.outputs.version }}"
           files: dist/*
-          generate_release_notes: true
+          generate_release_notes: false
 
       - name: Publish to PyPI
         if: steps.bump.outputs.skipped != 'true'
-        uses: pypa/gh-action-pypi-publish@release/v1
+        run: uv publish --trusted-publishing automatic
