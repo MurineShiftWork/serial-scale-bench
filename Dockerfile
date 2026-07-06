@@ -1,13 +1,12 @@
-# Dockerfile
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
+# Install the package from its own pyproject (no requirements.txt in this project).
 COPY . .
+RUN pip install --no-cache-dir .
 
 EXPOSE 8000
 
-CMD ["python", "main.py"]
+# Console entry point (see [project.scripts]); compose overrides with --device etc.
+CMD ["serial-scale-bench"]

@@ -21,6 +21,9 @@ Homepage = "https://github.com/MurineShiftWork/serial-scale-bench"
 Documentation = "https://larsrollik.github.io/serial-scale-bench/"
 "Issue Tracker" = "https://github.com/MurineShiftWork/serial-scale-bench/issues"
 
+[project.scripts]
+serial-scale-bench = "serial_scale_bench.entrypoint:entrypoint"
+
 [project.optional-dependencies]
 dev = [
     "commitizen",

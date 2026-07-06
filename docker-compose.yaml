@@ -11,7 +11,7 @@ services:
     devices:
       - "${SERIAL_DEVICE:-/dev/ttyUSB0}:/dev/ttyUSB0"
     command: >
-      python main.py
+      serial-scale-bench
       --device /dev/ttyUSB0
       --scale-id ${SCALE_ID:-scale-a1}
       --port 8000
